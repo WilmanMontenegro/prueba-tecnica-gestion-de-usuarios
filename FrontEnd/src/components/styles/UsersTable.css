@@ -1,0 +1,22 @@
+button{
+    border: none;
+    background: transparent;
+}
+.password{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    
+}
+.eye-icon{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.asterisk {
+    display: inline-block;
+}
+.action-button:hover {
+    transform: scale(1.2);
+    transition: transform 0.1s;
+  }
