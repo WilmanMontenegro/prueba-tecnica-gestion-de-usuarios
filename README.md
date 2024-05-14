@@ -2,6 +2,19 @@
 
 Este proyecto consta de dos partes: el FrontEnd y el BackEnd. Ambos necesitan ser desplegados para que la aplicación funcione correctamente.
 
+## Configuración de la conexión a la base de datos
+
+Este proyecto se conecta a una base de datos MySQL en `localhost` con el usuario `root` y sin contraseña. Asegúrate de tener MySQL instalado y configurado correctamente en tu máquina antes de intentar desplegar este proyecto.
+
+Si necesitas cambiar la configuración de la conexión a la base de datos, puedes hacerlo modificando las siguientes líneas en el archivo `db.js`:
+
+```javascript
+const config = {
+    host: 'localhost',
+    user: 'root',
+    password: ''
+};
+
 ## Despliegue del BackEnd
 
 1. Navega a la carpeta `BackEnd` con el comando `cd BackEnd`.
