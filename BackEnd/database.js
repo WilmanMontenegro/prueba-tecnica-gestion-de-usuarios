@@ -1,97 +1,103 @@
-// Importamos el módulo 'mysql'
-const mysql = require('mysql2/promise');
+// db.js
+const mysql = require('mysql');
 
-// Configuración de la conexión a la base de datos
-const config = {
+// Crear conexión a MySQL sin especificar la base de datos
+const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: ''
-};
+});
 
-// Nombre de la base de datos
-const dbName = 'prueba_tecnica';
-
-// Creamos una conexión a la base de datos
-let db;
-
-const connectToDatabase = async () => {
-    try {
-        db = await mysql.createConnection(config);
-        console.log('Conexión a MySQL establecida');
-    } catch (err) {
-        console.error('Error al conectar a la base de datos', err);
+// Conectar a MySQL
+db.connect((err) => {
+    if (err) {
         throw err;
     }
+    console.log('Conexión a MySQL exitosa');
+
+    // Crear la base de datos si no existe
+    db.query('CREATE DATABASE IF NOT EXISTS prueba_tecnica', (err, results) => {
+        if (err) {
+            console.log(err.message);
+        } else {
+            console.log('Base de datos creada o ya existente');
+        }
+    });
+
+    // Usar la base de datos
+    db.query('USE prueba_tecnica', (err, results) => {
+        if (err) {
+            console.log(err.message);
+        } else {
+            console.log('Usando la base de datos prueba_tecnica');
+        }
+    });
+
+    // Crear la tabla users si no existe
+    let createUsersTable = `CREATE TABLE IF NOT EXISTS users(
+    user_name VARCHAR(30) NOT NULL PRIMARY KEY,
+    full_name VARCHAR(50) NOT NULL,
+    email VARCHAR(250) NOT NULL UNIQUE,
+    password VARCHAR(64) NOT NULL,
+    age TINYINT(3) NOT NULL,
+    sex CHAR(1) NOT NULL
+    )`;
+
+    db.query(createUsersTable, (err, results, fields) => {
+        if (err) {
+            console.log(err.message);
+        }
+    });
+
+    // Insertar datos de prueba
+    let insertUsers = `INSERT IGNORE INTO users (user_name, full_name, email, password, age, sex)
+                     VALUES ('juan.perez', 'Juan Perez', 'juan.perez@example.com', 'password', 30, 'M'),
+                            ('maria.rodriguez', 'Maria Rodriguez', 'maria.rodriguez@example.com', 'password', 25, 'F'),
+                            ('carlos.gomez', 'Carlos Gomez', 'carlos.gomez@example.com', 'password', 35, 'M'),
+                            ('laura.lopez', 'Laura Lopez', 'laura.lopez@example.com', 'password', 28, 'F'),
+                            ('david.martinez', 'David Martinez', 'david.martinez@example.com', 'password', 32, 'M')`;
+
+    db.query(insertUsers, (err, results, fields) => {
+        if (err) {
+            console.log(err.message);
+        } else {
+            console.log('Datos de prueba insertados en la tabla users si no existían previamente');
+        }
+    });
+
+    console.log('Tabla users creada o ya existente');
+});
+
+// Función para obtener usuarios
+function getUsers(callback) {
+    db.query('SELECT * FROM users', (err, rows) => {
+        if (err) throw err;
+        callback(rows);
+    });
+}
+
+function addUser(user, callback) {
+    db.query('SELECT * FROM users WHERE user_name = ?', [user.user_name], (err, rows) => {
+        if (err) throw err;
+        if (rows.length) {
+            callback(null, 'El nombre de usuario ya existe');
+        } else {
+            db.query('SELECT * FROM users WHERE email = ?', [user.email], (err, rows) => {
+                if (err) throw err;
+                if (rows.length) {
+                    callback(null, 'El correo electrónico ya existe');
+                } else {
+                    db.query('INSERT INTO users SET ?', user, (err, result) => {
+                        if (err) throw err;
+                        callback(result);
+                    });
+                }
+            });
+        }
+    });
+}
+
+module.exports = {
+    getUsers,
+    addUser
 };
-
-const createDatabase = async () => {
-    try {
-        await db.query(`CREATE DATABASE IF NOT EXISTS ${dbName}`);
-        console.log(`Base de datos ${dbName} cargada exitosamente`);
-    } catch (err) {
-        console.error('Error al crear la base de datos', err);
-        throw err;
-    }
-};
-
-const changeDatabase = async () => {
-    try {
-        await db.changeUser({database : dbName});
-    } catch (err) {
-        console.error('Error al cambiar la base de datos', err);
-        throw err;
-    }
-};
-
-const createUsersTable = async () => {
-    try {
-        const createUsersTableSql = `CREATE TABLE IF NOT EXISTS users(
-            user_name VARCHAR(30) NOT NULL PRIMARY KEY,
-            full_name VARCHAR(50) NOT NULL,
-            email VARCHAR(250) NOT NULL UNIQUE,
-            password VARCHAR(64) NOT NULL,
-            age TINYINT(3) NOT NULL
-        )`;
-        await db.query(createUsersTableSql);
-    } catch (err) {
-        console.error('Error al crear la tabla', err);
-        throw err;
-    }
-};
-
-const insertSampleUsers = async () => {
-    try {
-        const insertSampleUsersSql = `
-            INSERT INTO users (user_name, full_name, email, password, age) VALUES
-            ('john_doe', 'John Doe', 'john.doe@example.com', 'jdpassword', 32),
-            ('jane_smith', 'Jane Smith', 'jane.smith@example.com', 'jspassword', 28),
-            ('robert_johnson', 'Robert Johnson', 'robert.johnson@example.com', 'rjpassword', 35),
-            ('michael_brown', 'Michael Brown', 'michael.brown@example.com', 'mbpassword', 30),
-            ('linda_garcia', 'Linda Garcia', 'linda.garcia@example.com', 'lgpassword', 27),
-            ('james_wilson', 'James Wilson', 'james.wilson@example.com', 'jwpassword', 33),
-            ('patricia_miller', 'Patricia Miller', 'patricia.miller@example.com', 'pmpassword', 29),
-            ('robert_moore', 'Robert Moore', 'robert.moore@example.com', 'rmpassword', 31),
-            ('jennifer_taylor', 'Jennifer Taylor', 'jennifer.taylor@example.com', 'jtpassword', 28),
-            ('michael_anderson', 'Michael Anderson', 'michael.anderson@example.com', 'mapassword', 34)
-            ON DUPLICATE KEY UPDATE user_name = user_name;
-        `;
-        await db.query(insertSampleUsersSql);
-        console.log('Usuarios de ejemplo insertados correctamente');
-    } catch (err) {
-        console.error('Error al insertar usuarios de ejemplo', err);
-        throw err;
-    }
-};
-
-const setupDatabase = async () => {
-    await connectToDatabase();
-    await createDatabase();
-    await changeDatabase();
-    await createUsersTable();
-    await insertSampleUsers();
-};
-
-setupDatabase();
-
-// Exportamos la conexión a la base de datos para que pueda ser utilizada en otros módulos
-module.exports = db;
