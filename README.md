@@ -13,7 +13,8 @@ const config = {
     host: 'localhost',
     user: 'root',
     password: ''
-};
+}; 
+```
 
 ## Despliegue del BackEnd
 
