@@ -89,17 +89,21 @@ export default function UsersTable() {
             <td className="text-center">{user.user_name}</td>
             <td className="text-center">{user.full_name}</td>
             <td className="text-center">{user.email}</td>
-            <td className="text-center password">
+            <td className="text-center ">
+              <div className='password'>
               <span className='asterisk'>
                 {showPasswordUser === user.user_name ? user.password : '••••••••'}
               </span>
-
-
               <button className='eye-icon'
                 onClick={() => setShowPasswordUser(showPasswordUser === user.user_name ? null : user.user_name)}
               >
                 {showPasswordUser === user.user_name ? <EyeSlashFill /> : <EyeFill />}
               </button>
+              </div>
+              
+
+
+              
             </td>
             <td className="text-center">{user.age}</td>
             <td className="text-center">
