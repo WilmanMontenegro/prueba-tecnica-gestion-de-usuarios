@@ -3,7 +3,7 @@ import axios from 'axios';
 import './styles/UsersTable.css';
 import Table from 'react-bootstrap/Table';
 import { Trash, PlusSquare, EyeFill, EyeSlashFill } from 'react-bootstrap-icons';
-import Modal from 'react-modal';
+
 
 // Componente UsersTable que muestra una tabla de usuarios y permite agregar y eliminar usuarios
 export default function UsersTable() {
@@ -15,6 +15,7 @@ export default function UsersTable() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [age, setAge] = useState("");
+  const [sex, setSex] = useState("");
   const [showPasswordUser, setShowPasswordUser] = useState(false);
 
 
@@ -30,27 +31,32 @@ export default function UsersTable() {
   }, []);
 
   // Función para agregar un usuario
+  // Función para agregar un usuario
   const addUser = async () => {
-    try {
-      const newUser = { user_name: userName, full_name: fullName, email: email, password: password, age: age };
-      const response = await axios.post('http://localhost:5000/add', newUser);
+    if (userName && fullName && email && password && age && sex) {
+      try {
+        const newUser = { user_name: userName, full_name: fullName, email: email, password: password, age: age, sex: sex };
+        const response = await axios.post('http://localhost:5000/add', newUser);
 
-      if (response.data.error) {
-        alert(response.data.error);
-      } else {
-        console.log(response.data);
-        setUsers([...users, newUser]);
-        setUserName("");
-        setFullName("");
-        setEmail("");
-        setPassword("");
-        setAge("");
+        if (response.data.error) {
+          alert(response.data.error);
+        } else {
+          console.log(response.data);
+          setUsers([...users, newUser]);
+          setUserName("");
+          setFullName("");
+          setEmail("");
+          setPassword("");
+          setAge("");
+          setSex("");
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
+    } else {
+      alert("Por favor, rellena todos los campos antes de añadir un usuario.");
     }
   };
-
   // Función para eliminar un usuario
   const deleteUser = async (user_name) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
@@ -65,7 +71,7 @@ export default function UsersTable() {
       }
     }
   };
-  
+
 
   // Renderiza una tabla con los usuarios y campos de entrada para agregar un nuevo usuario
   return (
@@ -78,6 +84,7 @@ export default function UsersTable() {
           <th className="text-center">Email</th>
           <th className="text-center">Contraseña</th>
           <th className="text-center">Edad</th>
+          <th className="text-center">Sexo</th>
           <th className="text-center">Acciones</th>
         </tr>
       </thead>
@@ -91,21 +98,22 @@ export default function UsersTable() {
             <td className="text-center">{user.email}</td>
             <td className="text-center ">
               <div className='password'>
-              <span className='asterisk'>
-                {showPasswordUser === user.user_name ? user.password : '••••••••'}
-              </span>
-              <button className='eye-icon'
-                onClick={() => setShowPasswordUser(showPasswordUser === user.user_name ? null : user.user_name)}
-              >
-                {showPasswordUser === user.user_name ? <EyeSlashFill /> : <EyeFill />}
-              </button>
+                <span className='asterisk'>
+                  {showPasswordUser === user.user_name ? user.password : '••••••••'}
+                </span>
+                <button className='eye-icon'
+                  onClick={() => setShowPasswordUser(showPasswordUser === user.user_name ? null : user.user_name)}
+                >
+                  {showPasswordUser === user.user_name ? <EyeSlashFill /> : <EyeFill />}
+                </button>
               </div>
-              
 
 
-              
+
+
             </td>
             <td className="text-center">{user.age}</td>
+            <td className="text-center">{user.sex}</td>
             <td className="text-center">
               {/* Botón para eliminar el usuario */}
               <button className="action-button" onClick={() => deleteUser(user.user_name)}><Trash size={25} /></button>
@@ -161,6 +169,17 @@ export default function UsersTable() {
               onChange={(e) => setAge(e.target.value)}
               required
             />
+          </td>
+          <td className="text-center">
+            <select
+              value={sex}
+              onChange={(e) => setSex(e.target.value)}
+              required
+            >
+              <option value="">Seleccionar género</option>
+              <option value="M">M</option>
+              <option value="F">F</option>
+            </select>
           </td>
           <td className="text-center">
             {/* Botón para agregar un nuevo usuario */}
